@@ -12,4 +12,5 @@ wrap-ansi/
 .vscode/
 .iml
 dist/*
+data/*
 
