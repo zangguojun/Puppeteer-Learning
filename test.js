@@ -10,8 +10,9 @@ const nameFormat = (name) => name.replace(/\//g, "-").replace(/\:/g, "：")
     fs.mkdirSync(path.resolve(__dirname, "data", "hupu"), { recursive: true })
 
     const browser = await puppeteer.launch({
-      // headless: false,
+      headless: false,
       defaultViewport: null,
+      // slowMo: 500,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     })
     let page = await browser.newPage()
@@ -43,7 +44,7 @@ const nameFormat = (name) => name.replace(/\//g, "-").replace(/\:/g, "：")
       })
     }, ...hotDOM)
 
-    for (let i = 1; i < hotActicle.length; i++) {
+    for (let i = 0; i < hotActicle.length; i++) {
       const href = hotActicle[i].href
       const name = nameFormat(hotActicle[i].name)
       await page.goto(href, { waitUntil: "networkidle0", timeout: 0 })
@@ -87,14 +88,20 @@ const nameFormat = (name) => name.replace(/\//g, "-").replace(/\:/g, "：")
 
       // display: none
       const hiddenXPathList = [
-        "//div[@class='bbs-post-web-body-right-wrapper']",
-        "//div[@class='backToTop_2mZa6']",
+        "//div[contains(@class,'bbs-post-web-body-right-wrapper')]",
+        "//div[contains(@class,'backToTop_2mZa6')]",
       ]
 
-      for (let k = 1; k < hiddenXPathList.length; k++) {
+      let test = ""
+
+      for (let k = 0; k < hiddenXPathList.length; k++) {
         await page.waitForXPath(hiddenXPathList[k])
         const hiddenDom = (await page.$x(hiddenXPathList[k]))[0]
-        await hiddenDom.evaluate((dom) => (dom.style.display = "none"))
+        await page.evaluate((dom) => {
+          test = JSON.stringify(dom.style)
+          dom.style.display = "none"
+          dom.style.backgroundColor = "red"
+        }, hiddenDom)
       }
 
       const titleXPath = "//div[@class='bbs-post-web-main-title']"
@@ -113,7 +120,7 @@ const nameFormat = (name) => name.replace(/\//g, "-").replace(/\:/g, "：")
       const commontXPath = "//div[@class='post-reply-list ']"
       await page.waitForXPath(commontXPath)
       const commontDOM = await page.$x(commontXPath)
-      for (let j = 1; j < 5; j++) {
+      for (let j = 0; j < 5; j++) {
         await commontDOM[j].screenshot({
           path: `data/hupu/${name}/commont_${j}.png`,
         })
