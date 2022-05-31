@@ -4,13 +4,21 @@ const fs = require("fs")
 
 const nameFormat = (name) => name.replace(/\//g, "-").replace(/\:/g, "：")
 
+const timeout = (delay) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve()
+    }, delay)
+  })
+}
+
 ;(async () => {
   try {
     fs.mkdirSync(path.resolve(__dirname, "data"), { recursive: true })
     fs.mkdirSync(path.resolve(__dirname, "data", "hupu"), { recursive: true })
 
     const browser = await puppeteer.launch({
-      // headless: false,
+      headless: false,
       defaultViewport: null,
       // slowMo: 500,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -47,6 +55,7 @@ const nameFormat = (name) => name.replace(/\//g, "-").replace(/\:/g, "：")
     for (let i = 0; i < hotActicle.length; i++) {
       const href = hotActicle[i].href
       const name = nameFormat(hotActicle[i].name)
+      // await page.goto(href, { waitUntil: "networkidle0", timeout: 0 })
       await page.goto(href, { waitUntil: "networkidle0", timeout: 0 })
 
       fs.mkdirSync(path.resolve(__dirname, "data", "hupu", name), {
@@ -92,30 +101,52 @@ const nameFormat = (name) => name.replace(/\//g, "-").replace(/\:/g, "：")
         "//div[contains(@class,'backToTop_2mZa6')]",
       ]
 
-      let test = ""
-
       for (let k = 0; k < hiddenXPathList.length; k++) {
         await page.waitForXPath(hiddenXPathList[k])
         const hiddenDom = (await page.$x(hiddenXPathList[k]))[0]
-        await page.evaluate((dom) => {
-          test = JSON.stringify(dom.style)
-          dom.style.display = "none"
-          dom.style.backgroundColor = "red"
-        }, hiddenDom)
+        await page.evaluate((dom) => (dom.style.display = "none"), hiddenDom)
       }
 
       const titleXPath = "//div[@class='bbs-post-web-main-title']"
       await page.waitForXPath(titleXPath)
       const titleDOM = (await page.$x(titleXPath))[0]
-      console.log(`第${i}个 ${name} title 截屏成功！`)
       await titleDOM.screenshot({ path: `data/hupu/${name}/title.png` })
+      console.log(`第${i + 1}个 ${name} title 截屏成功！`)
+
       await titleDOM.evaluate((dom) => (dom.style.display = "none"))
 
       const contentXPath = "//div[@class='post-wrapper']"
       await page.waitForXPath(contentXPath)
       const contentDOM = (await page.$x(contentXPath))[0]
-      console.log(`第${i}个 ${name} content 截屏成功！`)
+
+      await page.evaluate(async (dom) => {
+        let curHeight = 0
+        const contentHeight = dom.clientHeight
+        const timer = setInterval(() => {
+          if (curHeight >= contentHeight) {
+            timer.clearInterval()
+          }
+          curHeight += 300
+          console.log(curHeight)
+          window.scrollTo(0, curHeight)
+        }, 500)
+
+        const selectors = Array.from(dom.querySelectorAll("img"))
+        await Promise.all(
+          selectors.map((img) => {
+            if (img.complete) return Promise.resolve("loaded")
+            return new Promise((resolve, reject) => {
+              img.addEventListener("load", resolve)
+              img.addEventListener("error", reject)
+            })
+          })
+        )
+      }, contentDOM)
+
+      await timeout(1000)
+
       await contentDOM.screenshot({ path: `data/hupu/${name}/content.png` })
+      console.log(`第${i + 1}个 ${name} content 截屏成功！`)
 
       const commontXPath = "//div[@class='post-reply-list ']"
       await page.waitForXPath(commontXPath)
@@ -124,7 +155,7 @@ const nameFormat = (name) => name.replace(/\//g, "-").replace(/\:/g, "：")
         await commontDOM[j].screenshot({
           path: `data/hupu/${name}/commont_${j}.png`,
         })
-        console.log(`第${i}个 ${name} commont_${j} 截屏成功！`)
+        console.log(`第${i + 1}个 ${name} commont_${j} 截屏成功！`)
       }
     }
 
