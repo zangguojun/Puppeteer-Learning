@@ -57,14 +57,28 @@ const nameFormat = (name) => name.replace(/\//g, "-")
       // }
 
       const hiddenXPathList = [
-        "//div[@class='bbs-post-web-body-right-wrapper']",
-        "//div[@class='backToTop_2mZa6']",
+        {
+          father: "//div[@class='bbs-post-web-body']",
+          child: "//div[@class='bbs-post-web-body-right-wrapper']",
+        },
+        {
+          father: "//section[@class='hp-pc-footer']",
+          child: "//div[@class='backToTop_2mZa6']",
+        },
       ]
 
       for (let k = 1; k < hiddenXPathList.length; k++) {
         // await page.waitForXPath(hiddenXPathList[k])
-        const hiddenDom = (await page.$x(hiddenXPathList[k]))[0]
-        await hiddenDom.evaluate((dom) => (dom.style.display = "none"))
+        const { father, child } = hiddenXPathList[k]
+        const fatherDom = (await page.$x(father))[0]
+        const hiddenDom = (await page.$x(child))[0]
+        await page.evaluate(
+          (fatherDom, hiddenDom) => {
+            fatherDom.removeChild(hiddenDom)
+          },
+          fatherDom,
+          hiddenDom
+        )
       }
 
       const titleXPath = "//div[@class='bbs-post-web-main-title']"
