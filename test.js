@@ -2,7 +2,7 @@ const puppeteer = require("puppeteer")
 const path = require("path")
 const fs = require("fs")
 
-const nameFormat = (name) => name.replace(/\//g, "-")
+const nameFormat = (name) => name.replace(/\//g, "-").replace(/\:/g, "：")
 
 ;(async () => {
   try {
@@ -15,8 +15,8 @@ const nameFormat = (name) => name.replace(/\//g, "-")
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     })
     let page = await browser.newPage()
-    page.setDefaultNavigationTimeout(0)
-    page.setUserAgent(
+    await page.setDefaultNavigationTimeout(0)
+    await page.setUserAgent(
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36"
     )
     await page.goto("https://bbs.hupu.com/lol")
@@ -52,36 +52,49 @@ const nameFormat = (name) => name.replace(/\//g, "-")
         recursive: true,
       })
 
+      // 限制高度
       // const screenContent = (await page.$x("//div[@class='post-wrapper']"))[0]
       // const clientHeight = await screenContent.evaluate((dom) => dom.clientHeight)
       // if (clientHeight > 1000) {
-      //   page.close()
+      //   await page.close()
       //   continue
       // }
 
+      // removeChild
+      // const hiddenXPathList = [
+      //   {
+      //     father: "//div[@class='bbs-post-web-body-right-wrapper']",
+      //     child: "//div[@class='game-center-sidebar']",
+      //   },
+      //   {
+      //     father: "//section[@class='hp-pc-footer']",
+      //     child: "//div[@class='backToTop_2mZa6']",
+      //   },
+      // ]
+      // for (let k = 1; k < hiddenXPathList.length; k++) {
+      //   await page.waitForXPath(hiddenXPathList[k])
+      //   const { father, child } = hiddenXPathList[k]
+      //   const fatherDom = (await page.$x(father))[0]
+      //   const hiddenDom = (await page.$x(child))[0]
+      //   await page.evaluate(
+      //     (fatherDom, hiddenDom) => {
+      //       fatherDom.removeChild(hiddenDom)
+      //     },
+      //     fatherDom,
+      //     hiddenDom
+      //   )
+      // }
+
+      // display: none
       const hiddenXPathList = [
-        {
-          father: "//div[@class='bbs-post-web-body']",
-          child: "//div[@class='bbs-post-web-body-right-wrapper']",
-        },
-        {
-          father: "//section[@class='hp-pc-footer']",
-          child: "//div[@class='backToTop_2mZa6']",
-        },
+        "//div[@class='bbs-post-web-body-right-wrapper']",
+        "//div[@class='backToTop_2mZa6']",
       ]
 
       for (let k = 1; k < hiddenXPathList.length; k++) {
-        // await page.waitForXPath(hiddenXPathList[k])
-        const { father, child } = hiddenXPathList[k]
-        const fatherDom = (await page.$x(father))[0]
-        const hiddenDom = (await page.$x(child))[0]
-        await page.evaluate(
-          (fatherDom, hiddenDom) => {
-            fatherDom.removeChild(hiddenDom)
-          },
-          fatherDom,
-          hiddenDom
-        )
+        await page.waitForXPath(hiddenXPathList[k])
+        const hiddenDom = (await page.$x(hiddenXPathList[k]))[0]
+        await hiddenDom.evaluate((dom) => (dom.style.display = "none"))
       }
 
       const titleXPath = "//div[@class='bbs-post-web-main-title']"
