@@ -2,6 +2,8 @@ const puppeteer = require("puppeteer")
 const path = require("path")
 const fs = require("fs")
 
+const nameFormat = (name) => name.replace(/\//g, "-")
+
 ;(async () => {
   fs.mkdirSync(path.resolve(__dirname, "data"), { recursive: true })
   fs.mkdirSync(path.resolve(__dirname, "data", "hupu"), { recursive: true })
@@ -36,12 +38,14 @@ const fs = require("fs")
   }, ...hotDOM)
 
   for (let i = 1; i < hotActicle.length; i++) {
-    const { href, name } = hotActicle[i]
+    const href = hotActicle[i].href
+    const name = nameFormat(hotActicle[i].name)
     await page.goto(href, { waitUntil: "networkidle0", timeout: 0 })
     console.log(__dirname)
     fs.mkdirSync(path.resolve(__dirname, "data", "hupu", name), {
       recursive: true,
     })
+
     // const screenContent = (await page.$x("//div[@class='post-wrapper']"))[0]
     // const clientHeight = await screenContent.evaluate((dom) => dom.clientHeight)
     // if (clientHeight > 1000) {
