@@ -21,7 +21,7 @@ const timeout = (delay) => {
       // headless: false,
       defaultViewport: null,
       // slowMo: 500,
-      // args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args: ["--no-sandbox"],
     })
     let page = await browser.newPage()
     await page.setDefaultNavigationTimeout(0)
