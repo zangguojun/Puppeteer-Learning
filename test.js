@@ -10,12 +10,16 @@ const nameFormat = (name) => name.replace(/\//g, "-")
     fs.mkdirSync(path.resolve(__dirname, "data", "hupu"), { recursive: true })
 
     const browser = await puppeteer.launch({
-      // headless: false,
+      headless: false,
       defaultViewport: null,
+      isMobile: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     })
     let page = await browser.newPage()
     page.setDefaultNavigationTimeout(0)
+    page.setUserAgent(
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36"
+    )
     await page.goto("https://bbs.hupu.com/lol")
 
     const classifyBtnXPath = "//div[@class='bbs-sl-web-type-wrap']/div"
