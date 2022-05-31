@@ -10,7 +10,7 @@ const nameFormat = (name) => name.replace(/\//g, "-").replace(/\:/g, "：")
     fs.mkdirSync(path.resolve(__dirname, "data", "hupu"), { recursive: true })
 
     const browser = await puppeteer.launch({
-      headless: false,
+      // headless: false,
       defaultViewport: null,
       // slowMo: 500,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
