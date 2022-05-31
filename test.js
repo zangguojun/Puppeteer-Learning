@@ -18,10 +18,10 @@ const timeout = (delay) => {
     fs.mkdirSync(path.resolve(__dirname, "data", "hupu"), { recursive: true })
 
     const browser = await puppeteer.launch({
-      headless: false,
+      // headless: false,
       defaultViewport: null,
       // slowMo: 500,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      // args: ["--no-sandbox", "--disable-setuid-sandbox"],
     })
     let page = await browser.newPage()
     await page.setDefaultNavigationTimeout(0)
