@@ -63,7 +63,7 @@ const timeout = (delay) => {
       const clientHeight = await screenContent.evaluate(
         (dom) => dom.clientHeight
       )
-      console.log(`${name} content 图片过长${clientHeight}`)
+      console.log(`第${i + 1}个 ${name} content 图片过长${clientHeight}`)
       if (clientHeight > 1500) continue
 
       fs.mkdirSync(path.resolve(__dirname, "data", "img", name), {
@@ -110,7 +110,7 @@ const timeout = (delay) => {
       await page.waitForXPath(titleXPath)
       const titleDOM = (await page.$x(titleXPath))[0]
       await titleDOM.screenshot({ path: `data/img/${name}/title.png` })
-      console.log(`第${i + 1}个 ${name} title 截屏成功！`)
+      // console.log(`第${i + 1}个 ${name} title 截屏成功！`)
 
       await titleDOM.evaluate((dom) => (dom.style.display = "none"))
 
@@ -145,7 +145,7 @@ const timeout = (delay) => {
       await timeout(1000)
 
       await contentDOM.screenshot({ path: `data/img/${name}/content.png` })
-      console.log(`第${i + 1}个 ${name} content 截屏成功！`)
+      // console.log(`第${i + 1}个 ${name} content 截屏成功！`)
 
       const commontXPath = "//div[@class='post-reply-list ']"
       await page.waitForXPath(commontXPath)
@@ -154,8 +154,9 @@ const timeout = (delay) => {
         await commontDOM[j].screenshot({
           path: `data/img/${name}/commont_${j}.png`,
         })
-        console.log(`第${i + 1}个 ${name} commont_${j} 截屏成功！`)
+        // console.log(`第${i + 1}个 ${name} commont_${j} 截屏成功！`)
       }
+      console.log(`第${i + 1}个 ${name} 截屏成功！`)
     }
     await page.close()
     await browser.close()
