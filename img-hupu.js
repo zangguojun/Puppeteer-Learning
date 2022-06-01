@@ -18,7 +18,7 @@ const timeout = (delay) => {
     fs.mkdirSync(path.resolve(__dirname, "data", "img"), { recursive: true })
 
     const browser = await puppeteer.launch({
-      // headless: false,
+      headless: false,
       defaultViewport: null,
       // slowMo: 500,
       args: ["--no-sandbox"],
@@ -123,27 +123,29 @@ const timeout = (delay) => {
       const contentDOM = (await page.$x(contentXPath))[0]
 
       await page.evaluate(async (dom) => {
-        let curHeight = 0
-        const contentHeight = dom.clientHeight
-        const timer = setInterval(() => {
-          if (curHeight >= contentHeight) {
-            timer.clearInterval()
-          }
-          curHeight += 300
-          console.log(curHeight)
-          window.scrollTo(0, curHeight)
-        }, 500)
+        return new Promise((resolve) => {
+          // let curHeight = 0
+          // const contentHeight = dom.clientHeight
+          // const timer = setInterval(() => {
+          //   if (curHeight >= contentHeight) {
+          //     timer.clearInterval()
+          //   }
+          //   curHeight += 300
+          //   console.log(curHeight)
+          //   window.scrollTo(0, curHeight)
+          // }, 500)
 
-        const selectors = Array.from(dom.querySelectorAll("img"))
-        await Promise.all(
-          selectors.map((img) => {
-            if (img.complete) return Promise.resolve("loaded")
-            return new Promise((resolve, reject) => {
-              img.addEventListener("load", resolve)
-              img.addEventListener("error", reject)
+          const selectors = Array.from(dom.querySelectorAll("img"))
+          return Promise.all(
+            selectors.map((img) => {
+              if (img.complete) return Promise.resolve("loaded")
+              return new Promise((resolve, reject) => {
+                img.addEventListener("load", resolve)
+                img.addEventListener("error", reject)
+              })
             })
-          })
-        )
+          )
+        })
       }, contentDOM)
 
       await timeout(1000)

@@ -19,7 +19,7 @@ const timeout = (delay) => {
     fs.mkdirSync(path.resolve(__dirname, "data", "video"), { recursive: true })
 
     const browser = await puppeteer.launch({
-      // headless: false,
+      headless: false,
       defaultViewport: null,
       // slowMo: 500,
       args: ["--no-sandbox"],
@@ -53,8 +53,6 @@ const timeout = (delay) => {
       })
     }, ...hotDOM)
 
-    const recorder = new PuppeteerVideoRecorder()
-
     for (let i = 0; i < hotActicle.length; i++) {
       const href = hotActicle[i].href
       const name = nameFormat(hotActicle[i].name)
@@ -76,25 +74,28 @@ const timeout = (delay) => {
         await page.evaluate((dom) => (dom.style.display = "none"), hiddenDom)
       }
 
-      await recorder.init(page, `data/video/${name}`)
-
       const contentXPath = "//div[@class='post-wrapper']"
       await page.waitForXPath(contentXPath)
       const contentDOM = (await page.$x(contentXPath))[0]
-      await recorder.start()
 
+      const recorder = new PuppeteerVideoRecorder()
+      await recorder.init(page, path.resolve(__dirname, "data", "video", name))
+      await recorder.start()
       await page.evaluate(async (dom) => {
-        let curHeight = 0
-        const contentHeight = dom.clientHeight
-        const timer = setInterval(() => {
-          if (curHeight >= contentHeight) {
-            timer.clearInterval()
-          }
-          curHeight += 100
-          console.log(curHeight)
-          window.scrollTo(0, curHeight)
-        }, 800)
+        return new Promise((resolve) => {
+          let curHeight = 0
+          const contentHeight = dom.clientHeight
+          const timer = setInterval(() => {
+            curHeight += 200
+            window.scrollTo(0, curHeight)
+            if (curHeight >= contentHeight) {
+              clearTimeout(timer)
+              resolve()
+            }
+          }, 500)
+        })
       }, contentDOM)
+
       await recorder.stop()
     }
 
