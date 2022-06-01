@@ -58,10 +58,6 @@ const timeout = (delay) => {
       // await page.goto(href, { waitUntil: "networkidle0", timeout: 0 })
       await page.goto(href, { waitUntil: "networkidle0", timeout: 0 })
 
-      fs.mkdirSync(path.resolve(__dirname, "data", "img", name), {
-        recursive: true,
-      })
-
       // 限制高度
       const screenContent = (await page.$x("//div[@class='post-wrapper']"))[0]
       const clientHeight = await screenContent.evaluate(
@@ -69,6 +65,9 @@ const timeout = (delay) => {
       )
       if (clientHeight > 1280) continue
 
+      fs.mkdirSync(path.resolve(__dirname, "data", "img", name), {
+        recursive: true,
+      })
       // removeChild
       // const hiddenXPathList = [
       //   {
