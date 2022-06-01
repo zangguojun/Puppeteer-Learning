@@ -1,4 +1,3 @@
-const PuppeteerVideoRecorder = require("puppeteer-video-recorder")
 const puppeteer = require("puppeteer")
 const path = require("path")
 const fs = require("fs")
@@ -16,7 +15,7 @@ const timeout = (delay) => {
 ;(async () => {
   try {
     fs.mkdirSync(path.resolve(__dirname, "data"), { recursive: true })
-    fs.mkdirSync(path.resolve(__dirname, "data", "video"), { recursive: true })
+    fs.mkdirSync(path.resolve(__dirname, "data", "img"), { recursive: true })
 
     const browser = await puppeteer.launch({
       // headless: false,
@@ -53,18 +52,49 @@ const timeout = (delay) => {
       })
     }, ...hotDOM)
 
-    const recorder = new PuppeteerVideoRecorder()
-
     for (let i = 0; i < hotActicle.length; i++) {
       const href = hotActicle[i].href
       const name = nameFormat(hotActicle[i].name)
       // await page.goto(href, { waitUntil: "networkidle0", timeout: 0 })
       await page.goto(href, { waitUntil: "networkidle0", timeout: 0 })
 
-      fs.mkdirSync(path.resolve(__dirname, "data", "video", name), {
+      fs.mkdirSync(path.resolve(__dirname, "data", "img", name), {
         recursive: true,
       })
 
+      // 限制高度
+      const screenContent = (await page.$x("//div[@class='post-wrapper']"))[0]
+      const clientHeight = await screenContent.evaluate(
+        (dom) => dom.clientHeight
+      )
+      if (clientHeight > 1280) continue
+
+      // removeChild
+      // const hiddenXPathList = [
+      //   {
+      //     father: "//div[@class='bbs-post-web-body-right-wrapper']",
+      //     child: "//div[@class='game-center-sidebar']",
+      //   },
+      //   {
+      //     father: "//section[@class='hp-pc-footer']",
+      //     child: "//div[@class='backToTop_2mZa6']",
+      //   },
+      // ]
+      // for (let k = 1; k < hiddenXPathList.length; k++) {
+      //   await page.waitForXPath(hiddenXPathList[k])
+      //   const { father, child } = hiddenXPathList[k]
+      //   const fatherDom = (await page.$x(father))[0]
+      //   const hiddenDom = (await page.$x(child))[0]
+      //   await page.evaluate(
+      //     (fatherDom, hiddenDom) => {
+      //       fatherDom.removeChild(hiddenDom)
+      //     },
+      //     fatherDom,
+      //     hiddenDom
+      //   )
+      // }
+
+      // display: none
       const hiddenXPathList = [
         "//div[contains(@class,'bbs-post-web-body-right-wrapper')]",
         "//div[contains(@class,'backToTop_2mZa6')]",
@@ -76,12 +106,17 @@ const timeout = (delay) => {
         await page.evaluate((dom) => (dom.style.display = "none"), hiddenDom)
       }
 
-      await recorder.init(page, `data/video/${name}`)
+      const titleXPath = "//div[@class='bbs-post-web-main-title']"
+      await page.waitForXPath(titleXPath)
+      const titleDOM = (await page.$x(titleXPath))[0]
+      await titleDOM.screenshot({ path: `data/img/${name}/title.png` })
+      console.log(`第${i + 1}个 ${name} title 截屏成功！`)
+
+      await titleDOM.evaluate((dom) => (dom.style.display = "none"))
 
       const contentXPath = "//div[@class='post-wrapper']"
       await page.waitForXPath(contentXPath)
       const contentDOM = (await page.$x(contentXPath))[0]
-      await recorder.start()
 
       await page.evaluate(async (dom) => {
         let curHeight = 0
@@ -90,14 +125,39 @@ const timeout = (delay) => {
           if (curHeight >= contentHeight) {
             timer.clearInterval()
           }
-          curHeight += 100
+          curHeight += 300
           console.log(curHeight)
           window.scrollTo(0, curHeight)
-        }, 800)
-      }, contentDOM)
-      await recorder.stop()
-    }
+        }, 500)
 
+        const selectors = Array.from(dom.querySelectorAll("img"))
+        await Promise.all(
+          selectors.map((img) => {
+            if (img.complete) return Promise.resolve("loaded")
+            return new Promise((resolve, reject) => {
+              img.addEventListener("load", resolve)
+              img.addEventListener("error", reject)
+            })
+          })
+        )
+      }, contentDOM)
+
+      await timeout(1000)
+
+      await contentDOM.screenshot({ path: `data/img/${name}/content.png` })
+      console.log(`第${i + 1}个 ${name} content 截屏成功！`)
+
+      const commontXPath = "//div[@class='post-reply-list ']"
+      await page.waitForXPath(commontXPath)
+      const commontDOM = await page.$x(commontXPath)
+      for (let j = 0; j < 3; j++) {
+        await commontDOM[j].screenshot({
+          path: `data/img/${name}/commont_${j}.png`,
+        })
+        console.log(`第${i + 1}个 ${name} commont_${j} 截屏成功！`)
+      }
+    }
+    await page.close()
     await browser.close()
   } catch (e) {
     console.log(e)
