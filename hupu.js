@@ -63,7 +63,8 @@ const timeout = (delay) => {
       const clientHeight = await screenContent.evaluate(
         (dom) => dom.clientHeight
       )
-      if (clientHeight > 1280) continue
+      console.log(`${name} content 图片过长${clientHeight}`)
+      if (clientHeight > 1500) continue
 
       fs.mkdirSync(path.resolve(__dirname, "data", "img", name), {
         recursive: true,
