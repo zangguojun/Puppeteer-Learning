@@ -52,6 +52,15 @@ const timeout = (delay) => {
       })
     }, ...hotDOM)
 
+    // XPath CONST
+    const titleXPath = "//div[@class='bbs-post-web-main-title']"
+    const contentXPath = "//div[@class='post-wrapper']"
+    const hiddenXPathList = [
+      "//div[contains(@class,'bbs-post-web-body-right-wrapper')]",
+      "//div[contains(@class,'backToTop_2mZa6')]",
+    ]
+    const commontXPath = "//div[@class='post-reply-list ']"
+
     for (let i = 0; i < hotActicle.length; i++) {
       const href = hotActicle[i].href
       const name = nameFormat(hotActicle[i].name)
@@ -59,12 +68,15 @@ const timeout = (delay) => {
       await page.goto(href, { waitUntil: "networkidle0", timeout: 0 })
 
       // 限制高度
-      const screenContent = (await page.$x("//div[@class='post-wrapper']"))[0]
+      await page.waitForXPath(contentXPath)
+      const screenContent = (await page.$x(contentXPath))[0]
       const clientHeight = await screenContent.evaluate(
         (dom) => dom.clientHeight
       )
-      console.log(`第${i + 1}个 ${name} content 图片过长${clientHeight}`)
-      if (clientHeight > 1500) continue
+      if (clientHeight > 1500) {
+        console.log(`第${i + 1}个 ${name} content 图片过长${clientHeight}`)
+        continue
+      }
 
       fs.mkdirSync(path.resolve(__dirname, "data", "img", name), {
         recursive: true,
@@ -95,18 +107,12 @@ const timeout = (delay) => {
       // }
 
       // display: none
-      const hiddenXPathList = [
-        "//div[contains(@class,'bbs-post-web-body-right-wrapper')]",
-        "//div[contains(@class,'backToTop_2mZa6')]",
-      ]
-
       for (let k = 0; k < hiddenXPathList.length; k++) {
         await page.waitForXPath(hiddenXPathList[k])
         const hiddenDom = (await page.$x(hiddenXPathList[k]))[0]
         await page.evaluate((dom) => (dom.style.display = "none"), hiddenDom)
       }
 
-      const titleXPath = "//div[@class='bbs-post-web-main-title']"
       await page.waitForXPath(titleXPath)
       const titleDOM = (await page.$x(titleXPath))[0]
       await titleDOM.screenshot({ path: `data/img/${name}/title.png` })
@@ -114,8 +120,6 @@ const timeout = (delay) => {
 
       await titleDOM.evaluate((dom) => (dom.style.display = "none"))
 
-      const contentXPath = "//div[@class='post-wrapper']"
-      await page.waitForXPath(contentXPath)
       const contentDOM = (await page.$x(contentXPath))[0]
 
       await page.evaluate(async (dom) => {
@@ -147,7 +151,6 @@ const timeout = (delay) => {
       await contentDOM.screenshot({ path: `data/img/${name}/content.png` })
       // console.log(`第${i + 1}个 ${name} content 截屏成功！`)
 
-      const commontXPath = "//div[@class='post-reply-list ']"
       await page.waitForXPath(commontXPath)
       const commontDOM = await page.$x(commontXPath)
       for (let j = 0; j < 3; j++) {
