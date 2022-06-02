@@ -4,6 +4,10 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "colors": "^1.4.0",
+    "ffcreator": "^6.6.9",
+    "ffcreatorlite": "^2.3.8",
+    "keypress": "^0.2.1",
     "puppeteer": "^14.1.1",
     "puppeteer-video-recorder": "^1.0.5"
   }

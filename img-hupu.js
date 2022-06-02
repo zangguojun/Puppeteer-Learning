@@ -2,7 +2,8 @@ const puppeteer = require("puppeteer")
 const path = require("path")
 const fs = require("fs")
 
-const nameFormat = (name) => name.replace(/\//g, "-").replace(/\:/g, "：")
+const nameFormat = (name) =>
+  name.replace(/\//g, "-").replace(/\:/g, "：").replace(/ /g, "")
 
 const timeout = (delay) => {
   return new Promise((resolve, reject) => {
@@ -59,7 +60,7 @@ const timeout = (delay) => {
       "//div[contains(@class,'bbs-post-web-body-right-wrapper')]",
       "//div[contains(@class,'backToTop_2mZa6')]",
     ]
-    const commontXPath = "//div[@class='post-reply-list ']"
+    const commentXPath = "//div[@class='post-reply-list ']"
 
     for (let i = 0; i < hotActicle.length; i++) {
       const href = hotActicle[i].href
@@ -153,13 +154,13 @@ const timeout = (delay) => {
       await contentDOM.screenshot({ path: `data/img/${name}/content.png` })
       // console.log(`第${i + 1}个 ${name} content 截屏成功！`)
 
-      await page.waitForXPath(commontXPath)
-      const commontDOM = await page.$x(commontXPath)
+      await page.waitForXPath(commentXPath)
+      const commentDOM = await page.$x(commentXPath)
       for (let j = 0; j < 3; j++) {
-        await commontDOM[j].screenshot({
-          path: `data/img/${name}/commont_${j}.png`,
+        await commentDOM[j].screenshot({
+          path: `data/img/${name}/comment_${j}.png`,
         })
-        // console.log(`第${i + 1}个 ${name} commont_${j} 截屏成功！`)
+        // console.log(`第${i + 1}个 ${name} comment_${j} 截屏成功！`)
       }
       console.log(`第${i + 1}个 ${name} 截屏成功！`)
     }
