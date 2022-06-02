@@ -78,7 +78,8 @@ wrappr.loadSync()
       )
       if (textY > fontSize) {
         const preText = nodejieba.cut(
-          dirName.replace(/\[.*?\]|【.*?】|.*?\|/g, "")
+          dirName.replace(/\[.*?\]|【.*?】|.*?\|/g, ""),
+          true
         )
 
         const lines = wrappr.wrap(preText.join(" "), fontSize, width)
