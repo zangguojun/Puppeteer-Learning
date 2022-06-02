@@ -1,6 +1,9 @@
 const path = require("path")
 const fs = require("fs")
+const gm = require("gm")
 const colors = require("colors")
+const WordWrappr = require("word-wrappr")
+const nodejieba = require("nodejieba")
 
 const {
   FFCreatorCenter,
@@ -11,44 +14,91 @@ const {
 } = require("ffcreatorlite")
 
 const getFiles = (rootDir) => {
-  const list = ["title", "content", "commont_0", "commont_1", "commont_2"]
-  return list.map((fileName) => path.resolve(rootDir, `${fileName}.png`))
+  const list = ["main", "comment"]
+  return list
+    .map((fileName) => path.resolve(rootDir, `${fileName}.png`))
+    .filter((filePath) => fs.existsSync(filePath))
+}
+
+const getImageInfo = (filePath) => {
+  return new Promise((resolve, reject) => {
+    gm(filePath).size((err, size) => {
+      if (!err) {
+        resolve([size.width, size.height])
+      }
+      reject([])
+    })
+  })
 }
 
 const cacheDir = path.resolve(__dirname, "../cache")
 const outputDir = path.resolve(__dirname, "../output")
 const projectDir = path.resolve(__dirname, "backup", "img")
-const audio = path.resolve(__dirname, "./assets/audio/01.wav")
+const audioDir = path.resolve(__dirname, "backup", "audio")
+const fontDir = path.resolve(__dirname, "backup", "font")
+const font = path.resolve(fontDir, "jdnt.ttf")
+const width = 720
+const height = 1280
+const fontSize = 42
+const scale = 0.8
+var wrappr = new WordWrappr(font)
+wrappr.loadSync()
 
-const creator = new FFCreator({
-  cacheDir,
-  outputDir,
-  width: 720,
-  height: 1280,
-  log: true,
-  audio,
-})
-
-const dirlist = fs.readdirSync(projectDir)
-dirlist.slice(dirlist.length - 1).forEach((dirName) => {
-  const fileDir = path.resolve(projectDir, dirName)
-  // const [title, content, commont_0, commont_1, commont_2] =
-  getFiles(fileDir).map((imgPath) => {
-    const scene = new FFScene()
-    scene.setBgColor("#ff0000")
-    const fImg = new FFImage({ path: imgPath })
-    fImg.setScale(0.8)
-    scene.addChild(fImg)
-    const fText = new FFText({
-      text: dirName,
-    })
-    fText.setColor("#ffffff")
-    fText.setBackgroundColor("#000000")
-    fText.addEffect("fadeIn", 1, 1)
-    scene.addChild(fText)
-    scene.setDuration(2)
-    creator.addChild(scene)
+!(async () => {
+  const creator = new FFCreator({
+    cacheDir,
+    outputDir,
+    width,
+    height,
+    log: true,
+    audio: path.resolve(audioDir, "Silver-Scrapes.mp3"),
   })
+
+  const dirlist = fs.readdirSync(projectDir)
+
+  for (let i = 0; i < dirlist.length; i++) {
+    // for (let i = 0; i < 3; i++) {
+    const dirName = dirlist[i]
+    const fileDir = path.resolve(projectDir, dirName)
+
+    const files = getFiles(fileDir)
+    for (let j = 0; j < files.length; j++) {
+      const imgPath = files[j]
+      const scene = new FFScene()
+      scene.setBgColor("#c4d7d6")
+      const [w, h] = await getImageInfo(imgPath)
+      const contentY = height / 2 - (h * scale) / 2
+      const fImg = new FFImage({ path: imgPath, y: contentY })
+      fImg.setScale(scale)
+      scene.addChild(fImg)
+
+      const textY = contentY / 2 - fontSize / 2
+      console.log(
+        `${dirName} contentH:${h} contentY:${contentY} textY:${textY}`
+      )
+      if (textY > fontSize) {
+        const preText = nodejieba.cut(
+          dirName.replace(/\[.*?\]|【.*?】|.*?\|/g, "")
+        )
+
+        const lines = wrappr.wrap(preText.join(" "), fontSize, width)
+
+        const fText = new FFText({
+          fontSize,
+          font,
+          text: lines.join("\n"),
+          // x: fontSize,
+          y: textY,
+        })
+        fText.setColor("#ffffff")
+        fText.addEffect("hrslice", 1, 1)
+        scene.addChild(fText)
+      }
+
+      scene.setDuration(2)
+      creator.addChild(scene)
+    }
+  }
 
   creator.start()
   creator.openLog()
@@ -80,4 +130,4 @@ dirlist.slice(dirlist.length - 1).forEach((dirName) => {
       )
     )
   })
-})
+})()
