@@ -1,64 +1,26 @@
 const puppeteer = require("puppeteer")
 const path = require("path")
 const fs = require("fs")
-
-const nameFormat = (name) =>
-  name.replace(/\//g, "-").replace(/\:/g, "：").replace(/ /g, "")
-
-const timeout = (delay) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      resolve()
-    }, delay)
-  })
-}
+const { start, getMap } = require("./utils")
 
 ;(async () => {
+  start()
   try {
-    fs.mkdirSync(path.resolve(__dirname, "data"), { recursive: true })
-    fs.mkdirSync(path.resolve(__dirname, "data", "img"), { recursive: true })
-
-    const browser = await puppeteer.launch({
-      // headless: false,
-      defaultViewport: null,
-      // slowMo: 500,
-      args: ["--no-sandbox"],
-      // devtools: true,
-    })
-    const page = await browser.newPage()
-    await page.setDefaultNavigationTimeout(0)
-    await page.setUserAgent(
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36"
+    const [page, hotActicle] = getMap(
+      {
+        // headless: false,
+        defaultViewport: null,
+        // slowMo: 500,
+        args: ["--no-sandbox"],
+        // devtools: true,
+      },
+      {
+        url: "",
+        xpath: "",
+      }
     )
-    await page.goto("https://bbs.hupu.com/lol")
-
-    const classifyBtnXPath = "//div[@class='bbs-sl-web-type-wrap']/div"
-    await page.waitForXPath(classifyBtnXPath)
-    const classifyBtn = await page.$x(classifyBtnXPath)
-    /**
-     * 0 => 最新回复
-     * 1 => 最新发布
-     * 2 => 24小时榜
-     */
-    await classifyBtn[2].click()
-
-    // const hotListXPath = "//ul/li//div[@class='post-title']/a"
-    const hotListXPath =
-      "//ul/li//div[@class='post-title']/a[./following-sibling::span[1][not(contains(@class,'bbs-sl-web-post-shipin'))] or ./parent::*[count(span)=0]]"
-    await page.waitForXPath(hotListXPath)
-    const hotDOM = await page.$x(hotListXPath)
-    const hotActicle = await page.evaluate((...domList) => {
-      return domList.map((dom) => {
-        return {
-          href: dom.href,
-          name: dom.text,
-        }
-      })
-    }, ...hotDOM)
 
     // CONST
-    const allHeight = 1600
-    const maxHeight = allHeight - 200
     const titleXPath = "//div[@class='bbs-post-web-main-title']"
     const contentXPath = "//div[@class='post-wrapper']"
     const hiddenXPathList = [

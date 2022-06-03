@@ -31,11 +31,11 @@ const timeout = (delay) => {
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36"
     )
     await page.goto(
-      "https://bbs.hupu.com/search?q=doinb&topicId=&sortby=light&page=1"
+      "https://bbs.hupu.com/search?q=%E5%91%BC%E5%90%B8%20breathe&topicId=85&sortby=general&page=1"
     )
 
     const hotListXPath =
-      "//div[@class='content-outline']//a[@class='content-wrap-span'][1]"
+      "//div[@class='content-outline']//a[@class='content-wrap-span'][1][./following-sibling::a/text()='英雄联盟']"
     await page.waitForXPath(hotListXPath)
     const hotDOM = await page.$x(hotListXPath)
     const hotActicle = await page.evaluate((...domList) => {

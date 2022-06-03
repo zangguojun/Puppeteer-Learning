@@ -40,7 +40,7 @@ const font = path.resolve(fontDir, "jdnt.ttf")
 const width = 720
 const height = 1280
 const fontSize = 42
-const scale = 0.8
+const scale = 0.4
 var wrappr = new WordWrappr(font)
 wrappr.loadSync()
 
