@@ -1,55 +1,27 @@
 const puppeteer = require("puppeteer")
 const path = require("path")
 const fs = require("fs")
-
-const nameFormat = (name) =>
-  name.replace(/\//g, "-").replace(/\:/g, "：").replace(/ /g, "")
-
-const timeout = (delay) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      resolve()
-    }, delay)
-  })
-}
+const { mkRootDir, nameFormat, getMap, maxHeight } = require("./utils")
 
 ;(async () => {
   try {
-    fs.mkdirSync(path.resolve(__dirname, "data"), { recursive: true })
-    fs.mkdirSync(path.resolve(__dirname, "data", "img"), { recursive: true })
+    mkRootDir()
 
-    const browser = await puppeteer.launch({
-      // headless: false,
-      defaultViewport: null,
-      // slowMo: 500,
-      args: ["--no-sandbox"],
-      // devtools: true,
-    })
-    const page = await browser.newPage()
-    await page.setDefaultNavigationTimeout(0)
-    await page.setUserAgent(
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36"
-    )
-    await page.goto(
-      "https://bbs.hupu.com/search?q=%E5%91%BC%E5%90%B8%20breathe&topicId=85&sortby=general&page=1"
+    const [browser, page, hotActicle] = await getMap(
+      {
+        // headless: false,
+        defaultViewport: null,
+        // slowMo: 500,
+        args: ["--no-sandbox"],
+        // devtools: true,
+      },
+      {
+        url: "https://bbs.hupu.com/search?q=uzi&topicId=85&sortby=general&page=1",
+        xpath:
+          "//div[@class='content-outline']//a[@class='content-wrap-span'][1][./following-sibling::a/text()='英雄联盟']",
+      }
     )
 
-    const hotListXPath =
-      "//div[@class='content-outline']//a[@class='content-wrap-span'][1][./following-sibling::a/text()='英雄联盟']"
-    await page.waitForXPath(hotListXPath)
-    const hotDOM = await page.$x(hotListXPath)
-    const hotActicle = await page.evaluate((...domList) => {
-      return domList.map((dom) => {
-        return {
-          href: dom.href,
-          name: dom.text,
-        }
-      })
-    }, ...hotDOM)
-
-    // CONST
-    const allHeight = 1600
-    const maxHeight = allHeight - 200
     const titleXPath = "//div[@class='bbs-post-web-main-title']"
     const contentXPath = "//div[@class='post-wrapper']"
     const hiddenXPathList = [
@@ -61,7 +33,7 @@ const timeout = (delay) => {
     for (let i = 0; i < hotActicle.length; i++) {
       const href = hotActicle[i].href
       const name = nameFormat(hotActicle[i].name)
-      const curDir = path.resolve(__dirname, "data", "img", name)
+      const curDir = path.resolve(__dirname, "backup", "img", name)
       fs.mkdirSync(curDir, {
         recursive: true,
       })
@@ -81,7 +53,7 @@ const timeout = (delay) => {
       const titleDOM = (await page.$x(titleXPath))[0]
       const titletHeight = await titleDOM.evaluate((dom) => dom.clientHeight)
       sumHeight += titletHeight
-      await titleDOM.screenshot({ path: `data/img/${name}/title.png` })
+      // await titleDOM.screenshot({ path: `backup/img/${name}/title.png` })
       await titleDOM.evaluate((dom) => (dom.style.display = "none"))
 
       await page.waitForXPath(contentXPath)
@@ -118,7 +90,7 @@ const timeout = (delay) => {
         continue
       }
 
-      await contentDOM.screenshot({ path: `data/img/${name}/content.png` })
+      await contentDOM.screenshot({ path: `backup/img/${name}/content.png` })
 
       await page.waitForXPath(commentXPath)
       const commentDOM = await page.$x(commentXPath)
@@ -129,7 +101,7 @@ const timeout = (delay) => {
         sumHeight += cHeight
         if (sumHeight > maxHeight) break
         await cDom.screenshot({
-          path: `data/img/${name}/comment_${j}.png`,
+          path: `backup/img/${name}/comment_${j}.png`,
         })
       }
       console.log(`第${i + 1}个 ${name} 截屏成功！`)

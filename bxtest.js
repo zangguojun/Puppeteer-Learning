@@ -6,7 +6,7 @@ const { start, getMap } = require("./utils")
 ;(async () => {
   start()
   try {
-    const [page, hotActicle] = getMap(
+    const [page, hotActicle] = await getMap(
       {
         // headless: false,
         defaultViewport: null,

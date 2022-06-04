@@ -1,12 +1,11 @@
 const path = require("path")
 const fs = require("fs")
+const puppeteer = require("puppeteer")
 
 const rootDir = path.resolve(__dirname, "data")
 const imgDir = path.resolve(rootDir, "img")
 const allHeight = 1600
 const maxHeight = allHeight - 200
-
-
 
 const nameFormat = (name) =>
   name.replace(/\//g, "-").replace(/\:/g, "：").replace(/ /g, "")
@@ -19,12 +18,12 @@ const timeout = (delay) => {
   })
 }
 
-function start() {
+function mkRootDir() {
   fs.mkdirSync(path.resolve(__dirname, "data"), { recursive: true })
   fs.mkdirSync(path.resolve(__dirname, "data", "img"), { recursive: true })
 }
 
-function getMap(config, info) {
+async function getMap(config, info) {
   const browser = await puppeteer.launch(config)
   const page = await browser.newPage()
   await page.setDefaultNavigationTimeout(0)
@@ -44,7 +43,16 @@ function getMap(config, info) {
       }
     })
   }, ...hotDOM)
-  return [page, hotActicle]
+  return [browser, page, hotActicle]
 }
 
-export { start, rootDir, imgDir,maxHeight,allHeight, nameFormat, timeout, getMap }
+module.exports = {
+  mkRootDir,
+  rootDir,
+  imgDir,
+  maxHeight,
+  allHeight,
+  nameFormat,
+  timeout,
+  getMap,
+}

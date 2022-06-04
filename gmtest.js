@@ -20,7 +20,7 @@ const collapse = (target, ...args) => {
   })
 }
 
-const projectDir = path.resolve(__dirname, "data", "img")
+const projectDir = path.resolve(__dirname, "backup", "img")
 const dirlist = fs.readdirSync(projectDir)
 // dirlist.slice(dirlist.length - 1)
 dirlist.forEach(async (dirName) => {
