@@ -16,7 +16,7 @@ const { mkRootDir, nameFormat, getMap, maxHeight } = require("./utils")
         // devtools: true,
       },
       {
-        url: "https://bbs.hupu.com/search?q=uzi&topicId=85&sortby=general&page=1",
+        url: "https://bbs.hupu.com/search?q=RNG&topicId=85&sortby=general&page=1",
         xpath:
           "//div[@class='content-outline']//a[@class='content-wrap-span'][1][./following-sibling::a/text()='英雄联盟']",
       }

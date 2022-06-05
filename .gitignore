@@ -15,4 +15,5 @@ dist/*
 data/*
 backup/*
 assets/*
+userData/*
 
