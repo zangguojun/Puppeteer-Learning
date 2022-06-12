@@ -60,11 +60,11 @@ wrappr.loadSync()
     if (imgName.startsWith(".")) continue
     const imgPath = path.resolve(projectDir, imgName)
     const scene = new FFScene()
-    // scene.setBgColor("#c4d7d6")
-    const fbg = new FFImage({ path: bgImg })
-    let [w1, h1] = await getImageInfo(bgImg)
-    fbg.setScale(width / w1)
-    scene.addChild(fbg)
+    scene.setBgColor("#c4d7d6")
+    // const fbg = new FFImage({ path: bgImg })
+    // let [w1, h1] = await getImageInfo(bgImg)
+    // fbg.setScale(width / w1)
+    // scene.addChild(fbg)
 
     let [w, h] = await getImageInfo(imgPath)
     const scale = width / w
@@ -86,7 +86,7 @@ wrappr.loadSync()
       const fText = new FFText({
         fontSize,
         font,
-        text: lines.join("\n"),
+        text: "" && lines.join("\n"),
         // x: fontSize,
         y: textY,
       })
