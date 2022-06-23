@@ -3,7 +3,6 @@ const fs = require("fs")
 const gm = require("gm")
 const colors = require("colors")
 const WordWrappr = require("word-wrappr")
-const nodejieba = require("nodejieba")
 
 const {
   FFCreatorCenter,
@@ -36,7 +35,7 @@ const font = path.resolve(fontDir, "jdnt.ttf")
 const width = 720
 const height = 1280
 const fontSize = 42
-// const scale = 720 / 1080
+const duration = 4.5
 var wrappr = new WordWrappr(font)
 wrappr.loadSync()
 
@@ -51,16 +50,11 @@ wrappr.loadSync()
   })
 
   const files = fs.readdirSync(projectDir)
-  // console.log(`🚀 ~ files`, files)
-  // files = files.sort(
-  //   (a, b) => Number(a.split("、")[0]) > Number(b.split("、")[0])
-  // )
   for (let j = 0; j < files.length; j++) {
     const imgName = files[j]
     if (imgName.startsWith(".")) continue
     const imgPath = path.resolve(projectDir, imgName)
     const scene = new FFScene()
-    // scene.setBgColor("#c4d7d6")
     const fbg = new FFImage({ path: bgImg })
     let [w1, h1] = await getImageInfo(bgImg)
     fbg.setScale(width / w1)
@@ -75,19 +69,11 @@ wrappr.loadSync()
 
     const textY = contentY / 2 - fontSize / 2
     console.log(`${imgName} contentH:${h} contentY:${contentY} textY:${textY}`)
-    if (textY > fontSize) {
-      const preText = nodejieba.cut(
-        imgName.split(".")[0].replace(/\[.*?\]|【.*?】|.*?\|/g, ""),
-        true
-      )
-
-      const lines = wrappr.wrap(preText.join(" "), fontSize, width)
-
+    if (textY > fontSize / 2) {
       const fText = new FFText({
         fontSize,
         font,
-        text: lines.join("\n"),
-        // x: fontSize,
+        text: imgName.split(".")[0].replace(/\[.*?\]|【.*?】|.*?\|/g, ""),
         y: textY,
       })
       fText.setColor("#ffffff")
@@ -95,10 +81,10 @@ wrappr.loadSync()
       scene.addChild(fText)
     }
 
-    // radial
+    // radial distance
 
-    scene.setTransition("distance", 1.2)
-    scene.setDuration(4)
+    scene.setTransition("smoothright", 1.4)
+    scene.setDuration(duration)
     creator.addChild(scene)
   }
   const scene = new FFScene()
