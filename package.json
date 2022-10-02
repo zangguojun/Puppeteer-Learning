@@ -3,14 +3,6 @@
   "version": "1.0.0",
   "license": "MIT",
   "dependencies": {
-    "colors": "^1.4.0",
-    "ffcreator": "^6.6.9",
-    "ffcreatorlite": "^2.3.8",
-    "gm": "^1.23.1",
-    "nodejieba": "^2.6.0",
-    "opencv-wasm": "^4.3.0-10",
-    "puppeteer": "14.1.0",
-    "sharp": "^0.30.6",
-    "word-wrappr": "^1.0.8"
+    "puppeteer": "14.1.0"
   }
 }
